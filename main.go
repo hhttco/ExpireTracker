@@ -155,7 +155,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		var dbPassword string
 		// 去数据库查找该用户的密码
 		err := db.QueryRow("SELECT password FROM users WHERE username = ?", username).Scan(&dbPassword)
-		
+
 		// 查到了用户且密码完全一致
 		if err == nil && password == dbPassword {
 			http.SetCookie(w, &http.Cookie{Name: "session", Value: "authenticated", Path: "/"})
@@ -219,7 +219,6 @@ func passwordHandler(w http.ResponseWriter, r *http.Request) {
 		var dbPassword string
 		// 验证当前原密码是否正确
 		err := db.QueryRow("SELECT password FROM users WHERE username = 'admin'").Scan(&dbPassword)
-		
 		if err == nil && oldPwd == dbPassword && newPwd != "" {
 			// 核心：直接更新数据库文件
 			_, updateErr := db.Exec("UPDATE users SET password = ? WHERE username = 'admin'", newPwd)
