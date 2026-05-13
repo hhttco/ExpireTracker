@@ -55,22 +55,34 @@ func main() {
 }
 
 func initDB() {
-        var err error
-        db, err = sql.Open("sqlite3", "./tracker.db")
-        if err != nil {
-                log.Fatal(db)
-        }
+	var err error
+	db, err = sql.Open("sqlite", "./tracker.db") // 或 sqlite3
+	if err != nil {
+		log.Fatal(err)
+	}
 
-        query := `
-        CREATE TABLE IF NOT EXISTS items (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                type TEXT NOT NULL,
-                expires_at DATETIME NOT NULL
-        );`
-        if _, err = db.Exec(query); err != nil {
-                log.Fatal(err)
-        }
+	// 1. 创建资产表
+	queryItems := `CREATE TABLE IF NOT EXISTS items (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT NOT NULL,
+		type TEXT NOT NULL,
+		expires_at DATETIME NOT NULL
+	);`
+	db.Exec(queryItems)
+
+	// 2. 创建用户表
+	queryUsers := `CREATE TABLE IF NOT EXISTS users (
+		username TEXT PRIMARY KEY,
+		password TEXT NOT NULL
+	);`
+	db.Exec(queryUsers)
+
+	// 3. 如果用户表是空的，初始化注入默认账号密码 admin / admin
+	var count int
+	db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
+	if count == 0 {
+		db.Exec("INSERT INTO users (username, password) VALUES (?, ?)", "admin", "admin")
+	}
 }
 
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
@@ -140,24 +152,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		username := r.FormValue("username")
 		password := r.FormValue("password")
 
-		if username == "admin" && password == adminPassword {
+		var dbPassword string
+		// 去数据库查找该用户的密码
+		err := db.QueryRow("SELECT password FROM users WHERE username = ?", username).Scan(&dbPassword)
+		
+		// 查到了用户且密码完全一致
+		if err == nil && password == dbPassword {
 			http.SetCookie(w, &http.Cookie{Name: "session", Value: "authenticated", Path: "/"})
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		} else {
-			data := map[string]interface{}{
-				"HasError": true,
-			}
+			data := map[string]interface{}{"HasError": true}
 			tmpl.ExecuteTemplate(w, "login.html", data)
 			return
 		}
 	}
 
-	// 正常的普通 GET 访问登录页（未触发登录动作时，错误状态为 false）
-	data := map[string]interface{}{
-		"HasError": false,
-	}
-	tmpl.ExecuteTemplate(w, "login.html", data)
+	tmpl.ExecuteTemplate(w, "login.html", map[string]interface{}{"HasError": false})
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -201,16 +212,24 @@ func deleteHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func passwordHandler(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodPost {
-                oldPwd := r.FormValue("old_password")
-                newPwd := r.FormValue("new_password")
+	if r.Method == http.MethodPost {
+		oldPwd := r.FormValue("old_password")
+		newPwd := r.FormValue("new_password")
 
-                if oldPwd == adminPassword && newPwd != "" {
-                        adminPassword = newPwd
-                        // 修改成功后强制重新登录
-                        http.Redirect(w, r, "/logout", http.StatusSeeOther)
-                        return
-                }
-        }
-        http.Redirect(w, r, "/", http.StatusSeeOther)
+		var dbPassword string
+		// 验证当前原密码是否正确
+		err := db.QueryRow("SELECT password FROM users WHERE username = 'admin'").Scan(&dbPassword)
+		
+		if err == nil && oldPwd == dbPassword && newPwd != "" {
+			// 核心：直接更新数据库文件
+			_, updateErr := db.Exec("UPDATE users SET password = ? WHERE username = 'admin'", newPwd)
+			if updateErr == nil {
+				// 修改成功后强制安全注销，让其用新密码重新登录
+				http.Redirect(w, r, "/logout", http.StatusSeeOther)
+				return
+			}
+		}
+	}
+	// 如果失败，直接弹回首页
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
