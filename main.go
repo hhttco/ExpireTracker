@@ -137,13 +137,27 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
         if r.Method == http.MethodPost {
-                if r.FormValue("username") == "admin" && r.FormValue("password") == adminPassword {
+                username := r.FormValue("username")
+                password := r.FormValue("password")
+
+                if username == "admin" && password == adminPassword {
                         http.SetCookie(w, &http.Cookie{Name: "session", Value: "authenticated", Path: "/"})
                         http.Redirect(w, r, "/", http.StatusSeeOther)
                         return
+                } else {
+                        // 密码或账号错误，重定向回登录页并带上 error=1 参数
+                        http.Redirect(w, r, "/login?error=1", http.StatusSeeOther)
+                        return
                 }
         }
-        tmpl.ExecuteTemplate(w, "login.html", nil)
+
+        // 检查 URL 中是否有 error 参数
+        hasError := r.URL.Query().Get("error") == "1"
+        data := map[string]interface{}{
+                "HasError": hasError,
+        }
+
+        tmpl.ExecuteTemplate(w, "login.html", data)
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
