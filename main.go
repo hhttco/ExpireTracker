@@ -56,7 +56,7 @@ func main() {
 
 func initDB() {
 	var err error
-	db, err = sql.Open("sqlite", "./tracker.db") // 或 sqlite3
+	db, err = sql.Open("sqlite3", "./tracker.db") // 或 sqlite3
 	if err != nil {
 		log.Fatal(err)
 	}
