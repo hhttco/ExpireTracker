@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资产监控主页</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --panel-bg: rgba(255, 255, 255, 0.03);
+            --panel-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --table-hover: rgba(255, 255, 255, 0.02);
+            --input-bg: rgba(255, 255, 255, 0.05);
+            --modal-bg: #1e293b;
+        }
+
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --panel-border: rgba(15, 23, 42, 0.08);
+            --text-main: #0f1726;
+            --text-sub: #64748b;
+            --table-hover: rgba(0, 0, 0, 0.02);
+            --input-bg: rgba(0, 0, 0, 0.03);
+            --modal-bg: #ffffff;
+        }
+
+        /* 核心修改点：去除了 color 的 transition，只让背景和边框有平滑过渡 */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
+        body { 
+            background: var(--bg-gradient); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            padding: 40px 20px;
+            transition: background 0.3s ease; 
+        }
+        
+        .container { max-width: 1250px; margin: 0 auto; width: 100%; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
+        h2 { font-weight: 600; font-size: 24px; letter-spacing: -0.5px; }
+        .nav-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+        /* 按钮与面板：仅过渡背景色与边框色，文字颜色不加过渡动画 */
+        .btn { 
+            padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; 
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .btn-theme { background: var(--panel-bg); border: 1px solid var(--panel-border); color: var(--text-main); }
+        .btn-add { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3); }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { background: #ef4444; color: white; }
+        .btn-action { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
+        .btn-action:hover { background: #4f46e5; color: white; }
+        .btn-pwd { background: transparent; color: var(--text-sub); font-size: 13px; text-decoration: underline; padding-left: 0; padding-right: 0; }
+        .btn-logout { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+
+        .glass-box { 
+            background: var(--panel-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
+            border: 1px solid var(--panel-border); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+            overflow: hidden; width: 100%;
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; }
+        th, td { padding: 18px 24px; border-bottom: 1px solid var(--panel-border); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th { color: var(--text-sub); font-weight: 600; font-size: 13px; letter-spacing: 0.5px; background: rgba(0,0,0,0.02); }
+        
+        /* 表格行在切换模式时也采用瞬间变色，仅过渡背景 */
+        tr { transition: background 0.2s ease; }
+        tr:hover { background-color: var(--table-hover); }
+        .col-equal { width: 20%; }
+
+        .status-safe { border-left: 4px solid #10b981; }
+        .status-warning { border-left: 4px solid #f59e0b; }
+        .status-warning td:nth-child(4) { color: #f59e0b; font-weight: 600; }
+        .status-danger { border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.02); }
+        .status-danger td:nth-child(4) { color: #ef4444; font-weight: bold; animation: pulse 2s infinite; }
+        .status-expired { border-left: 4px solid #6b7280; opacity: 0.6; }
+        .status-expired td:nth-child(2) { text-decoration: line-through; color: var(--text-sub); }
+
+        .type-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .ops-cell { display: flex; gap: 8px; }
+
+        /* 模态弹窗 */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+        .modal-content { background: var(--modal-bg); border: 1px solid var(--panel-border); padding: 30px; border-radius: 14px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); color: var(--text-main); }
+        .modal-header { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; color: var(--text-sub); margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; background: var(--input-bg); border: 1px solid var(--panel-border); padding: 11px 14px; border-radius: 8px; color: var(--text-main); font-size: 14px; outline: none; }
+        .form-group input:focus, .form-group select:focus { border-color: #6366f1; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* 移动端手机界面自适应 */
+        @media screen and (max-width: 768px) {
+            body { padding: 20px 12px; }
+            header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .nav-actions { width: 100%; justify-content: space-between; }
+            .btn-pwd { display: none; } 
+            
+            table thead { display: none; }
+            table, tbody, tr, td { display: block; width: 100% !important; }
+            tr { 
+                margin-bottom: 15px; 
+                border-radius: 10px; 
+                background: var(--panel-bg); 
+                border: 1px solid var(--panel-border);
+                padding: 12px;
+                transition: background 0.3s, border-color 0.3s;
+            }
+            td { 
+                text-align: left; 
+                padding: 6px 8px; 
+                border-bottom: none; 
+                white-space: normal; 
+                overflow: visible; 
+                text-overflow: clip; 
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            
+            td:nth-child(1)::before { content: "资产类型："; color: var(--text-sub); font-size: 13px; }
+            td:nth-child(2)::before { content: "资产名称："; color: var(--text-sub); font-size: 13px; }
+            td:nth-child(3)::before { content: "确切到期："; color: var(--text-sub); font-size: 13px; }
+            td:nth-child(4)::before { content: "状态计时："; color: var(--text-sub); font-size: 13px; }
+            td:nth-child(5)::before { content: "操作管理："; color: var(--text-sub); font-size: 13px; }
+            
+            .ops-cell { width: auto; margin-top: 4px; justify-content: flex-end; }
+            .glass-box { background: transparent; border: none; box-shadow: none; overflow: visible; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h2>资产到期监控面板</h2>
+        <div class="nav-actions">
+            <button class="btn btn-theme" onclick="toggleTheme()" id="themeBtn">🌙 暗色模式</button>
+            <button class="btn btn-pwd" onclick="openModal('pwdModal')">修改密码</button>
+            <button class="btn btn-add" onclick="openModal('addModal')">录入资产</button>
+            <a href="/logout" class="btn btn-logout" style="text-decoration: none;">安全退出</a>
+        </div>
+    </header>
+
+    <div class="glass-box">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-equal">资产类型</th>
+                    <th class="col-equal">资产项目名称</th>
+                    <th class="col-equal">确切到期日</th>
+                    <th class="col-equal">状态 / 倒计时</th>
+                    <th class="col-equal">管理维护</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Items}}
+                <tr class="status-{{.Status}}">
+                    <td title="{{.Type}}"><span class="type-badge">{{.Type}}</span></td>
+                    <td title="{{.Name}}"><strong>{{.Name}}</strong></td>
+                    <td>{{.ExpiresAt.Format "2006-01-02"}}</td>
+                    <td>
+                        {{if eq .Status "expired"}} 已逾期 ({{.DaysLeft}} 天)
+                        {{else if eq .Status "danger"}} 极危 (仅剩 {{.DaysLeft}} 天)
+                        {{else}} {{.DaysLeft}} 天后到期
+                        {{end}}
+                    </td>
+                    <td class="ops-cell">
+                        <button class="btn btn-action" style="padding:6px 12px; font-size:12px;" onclick="openRenewModal('{{.ID}}', '{{.Name}}')">续费</button>
+                        <form action="/delete" method="POST" onsubmit="return confirm('确定要删除这笔资产记录吗？');" style="display:inline;">
+                            <input type="hidden" name="id" value="{{.ID}}">
+                            <button type="submit" class="btn btn-danger" style="padding:6px 12px; font-size:12px;">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-sub); padding: 40px; border: none; background: var(--panel-bg); border-radius: 14px;">💡 暂无被监控资产，请点击右上角录入</td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 弹窗 1：录入新资产 -->
+<div class="modal" id="addModal">
+    <div class="modal-content">
+        <div class="modal-header">录入新资产监控</div>
+        <form action="/add" method="POST">
+            <div class="form-group">
+                <label>资产名称</label>
+                <input type="text" name="name" placeholder="例如: 核心业务服务器" required>
+            </div>
+            <div class="form-group">
+                <label>资产类型</label>
+                <select name="type">
+                    <option value="域名">域名</option>
+                    <option value="VPS">虚拟主机</option>
+                    <option value="SSL证书">证书</option>
+                    <option value="其他">其他杂项</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>到期日期选择</label>
+                <input type="date" name="expiry_date" value="{{.CurrentDate}}" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-theme" onclick="closeModal('addModal')">取消</button>
+                <button type="submit" class="btn btn-add">确认保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 弹窗 2：办理资产续费 -->
+<div class="modal" id="renewModal">
+    <div class="modal-content">
+        <div class="modal-header">资产续期截止调整</div>
+        <form action="/edit" method="POST">
+            <input type="hidden" name="id" id="renewItemId">
+            <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 16px;">正在更新: <span id="renewItemName" style="color: var(--text-main); font-weight: 600;"></span></p>
+            <div class="form-group">
+                <label>全新到期截止日</label>
+                <input type="date" name="expiry_date" value="{{.CurrentDate}}" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-theme" onclick="closeModal('renewModal')">放弃</button>
+                <button type="submit" class="btn btn-add">应用修改</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 弹窗 3：安全修改密码 -->
+<div class="modal" id="pwdModal">
+    <div class="modal-content">
+        <div class="modal-header">修改管理员登录密码</div>
+        <form action="/change-password" method="POST">
+            <div class="form-group">
+                <label>当前原密码</label>
+                <input type="password" name="old_password" required>
+            </div>
+            <div class="form-group">
+                <label>设置新密码</label>
+                <input type="password" name="new_password" required>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-theme" onclick="closeModal('pwdModal')">取消</button>
+                <button type="submit" class="btn btn-danger" style="background:#ef4444; color:white;">提交更改并登出</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    
+    function openRenewModal(id, name) {
+        document.getElementById('renewItemId').value = id;
+        document.getElementById('renewItemName').innerText = name;
+        openModal('renewModal');
+    }
+
+    window.onclick = function(e) {
+        if(e.target.classList.contains('modal')) e.target.style.display = 'none';
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const btn = document.getElementById('themeBtn');
+        if (body.getAttribute('data-theme') === 'light') {
+            body.removeAttribute('data-theme');
+            btn.innerText = '🌙 暗色模式';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.setAttribute('data-theme', 'light');
+            btn.innerText = '☀️ 明亮模式';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    window.onload = function() {
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.setAttribute('data-theme', 'light');
+            document.getElementById('themeBtn').innerText = '☀️ 明亮模式';
+        }
+    }
+</script>
+</body>
+</html>
