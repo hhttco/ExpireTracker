@@ -117,7 +117,7 @@ server {
     # [反向代理核心路由] 对接后台 Golang 服务端口
     # ------------------------------------------
     location / {
-        proxy_pass http://127.0.0.1:8080;
+        proxy_pass http://127.0.0.1:8089;
 
         # 高性能 HTTP/1.1 长连接支持
         proxy_http_version 1.1;
