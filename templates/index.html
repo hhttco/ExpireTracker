@@ -14,6 +14,7 @@
             --table-hover: rgba(255, 255, 255, 0.02);
             --input-bg: rgba(255, 255, 255, 0.05);
             --modal-bg: #1e293b;
+            --menu-bg: #1e293b;
         }
 
         [data-theme="light"] {
@@ -25,50 +26,46 @@
             --table-hover: rgba(0, 0, 0, 0.02);
             --input-bg: rgba(0, 0, 0, 0.03);
             --modal-bg: #ffffff;
+            --menu-bg: #ffffff;
         }
 
-        /* 核心修改点：去除了 color 的 transition，只让背景和边框有平滑过渡 */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        body { 
-            background: var(--bg-gradient); 
-            color: var(--text-main); 
-            min-height: 100vh; 
-            padding: 40px 20px;
-            transition: background 0.3s ease; 
-        }
+        body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 40px 20px; transition: background 0.3s ease; }
         
         .container { max-width: 1250px; margin: 0 auto; width: 100%; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; flex-wrap: wrap; gap: 15px; }
         h2 { font-weight: 600; font-size: 24px; letter-spacing: -0.5px; }
-        .nav-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .nav-actions { display: flex; gap: 12px; align-items: center; position: relative; }
 
-        /* 按钮与面板：仅过渡背景色与边框色，文字颜色不加过渡动画 */
-        .btn { 
-            padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; 
-            display: inline-flex; align-items: center; justify-content: center;
-            transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
-        }
+        .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s, border-color 0.2s, box-shadow 0.2s; }
         .btn-theme { background: var(--panel-bg); border: 1px solid var(--panel-border); color: var(--text-main); }
         .btn-add { background: linear-gradient(135deg, #4f46e5, #6366f1); color: white; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3); }
-        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-        .btn-danger:hover { background: #ef4444; color: white; }
         .btn-action { background: rgba(99, 102, 241, 0.1); color: #818cf8; }
         .btn-action:hover { background: #4f46e5; color: white; }
-        .btn-pwd { background: transparent; color: var(--text-sub); font-size: 13px; text-decoration: underline; padding-left: 0; padding-right: 0; }
-        .btn-logout { background: rgba(244, 63, 94, 0.1); color: #f43f5e; }
+        .btn-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { background: #ef4444; color: white; }
 
-        .glass-box { 
-            background: var(--panel-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); 
-            border: 1px solid var(--panel-border); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-            overflow: hidden; width: 100%;
-            transition: background 0.3s ease, border-color 0.3s ease;
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-menu { 
+            position: absolute; right: 0; top: calc(100% + 8px); 
+            background: var(--menu-bg); border: 1px solid var(--panel-border); 
+            border-radius: 10px; width: 150px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            display: none; flex-direction: column; overflow: hidden; z-index: 10; 
         }
+        .dropdown-menu a, .dropdown-menu button { 
+            padding: 11px 16px; font-size: 14px; color: var(--text-main); 
+            text-align: left; text-decoration: none; background: transparent; 
+            border: none; width: 100%; cursor: pointer; display: block;
+        }
+        .dropdown-menu a:hover, .dropdown-menu button:hover { background: var(--table-hover); color: #6366f1; }
+        .dropdown-menu .menu-sep { border-top: 1px solid var(--panel-border); }
+        .show { display: flex; }
+
+        .glass-box { background: var(--panel-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--panel-border); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden; width: 100%; transition: background 0.3s ease, border-color 0.3s ease; }
 
         table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; }
         th, td { padding: 18px 24px; border-bottom: 1px solid var(--panel-border); vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { color: var(--text-sub); font-weight: 600; font-size: 13px; letter-spacing: 0.5px; background: rgba(0,0,0,0.02); }
-        
-        /* 表格行在切换模式时也采用瞬间变色，仅过渡背景 */
         tr { transition: background 0.2s ease; }
         tr:hover { background-color: var(--table-hover); }
         .col-equal { width: 20%; }
@@ -81,10 +78,19 @@
         .status-expired { border-left: 4px solid #6b7280; opacity: 0.6; }
         .status-expired td:nth-child(2) { text-decoration: line-through; color: var(--text-sub); }
 
-        .type-badge { padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .type-badge { padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; background: rgba(99, 102, 241, 0.12); color: #818cf8; display: inline-flex; align-items: center; gap: 8px; }
+        
+        .ico { display: inline-block; width: 12px; height: 12px; position: relative; flex-shrink: 0; }
+        .ico-domain { border: 1.5px solid #818cf8; border-radius: 50%; }
+        .ico-domain::before { content:""; position: absolute; top:0; left:4px; width:1px; height:9px; background:#818cf8; }
+        .ico-vps { border-top: 2px solid #818cf8; border-bottom: 2px solid #818cf8; height: 10px; }
+        .ico-vps::before { content:""; position: absolute; top:3px; left:0; width:12px; height:2px; background:#818cf8; }
+        .ico-ssl { width: 10px; height: 8px; border: 1.5px solid #818cf8; border-radius: 2px; top: 2px; left: 1px; }
+        .ico-ssl::before { content:""; position: absolute; top: -5px; left: 1px; width: 4px; height: 4px; border: 1.5px solid #818cf8; border-bottom: none; border-radius: 2px 2px 0 0; }
+        .ico-other { background: #818cf8; border-radius: 2px; transform: rotate(45deg); width: 8px; height: 8px; top: 2px; left: 2px; }
+
         .ops-cell { display: flex; gap: 8px; }
 
-        /* 模态弹窗 */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
         .modal-content { background: var(--modal-bg); border: 1px solid var(--panel-border); padding: 30px; border-radius: 14px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); color: var(--text-main); }
         .modal-header { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
@@ -96,34 +102,15 @@
 
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* 移动端手机界面自适应 */
         @media screen and (max-width: 768px) {
             body { padding: 20px 12px; }
             header { flex-direction: column; align-items: flex-start; gap: 10px; }
             .nav-actions { width: 100%; justify-content: space-between; }
-            .btn-pwd { display: none; } 
             
             table thead { display: none; }
             table, tbody, tr, td { display: block; width: 100% !important; }
-            tr { 
-                margin-bottom: 15px; 
-                border-radius: 10px; 
-                background: var(--panel-bg); 
-                border: 1px solid var(--panel-border);
-                padding: 12px;
-                transition: background 0.3s, border-color 0.3s;
-            }
-            td { 
-                text-align: left; 
-                padding: 6px 8px; 
-                border-bottom: none; 
-                white-space: normal; 
-                overflow: visible; 
-                text-overflow: clip; 
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
+            tr { margin-bottom: 15px; border-radius: 10px; background: var(--panel-bg); border: 1px solid var(--panel-border); padding: 12px; transition: background 0.3s, border-color 0.3s; }
+            td { text-align: left; padding: 6px 8px; border-bottom: none; white-space: normal; overflow: visible; text-overflow: clip; display: flex; align-items: center; justify-content: space-between; }
             
             td:nth-child(1)::before { content: "资产类型："; color: var(--text-sub); font-size: 13px; }
             td:nth-child(2)::before { content: "资产名称："; color: var(--text-sub); font-size: 13px; }
@@ -142,9 +129,15 @@
         <h2>资产到期监控面板</h2>
         <div class="nav-actions">
             <button class="btn btn-theme" onclick="toggleTheme()" id="themeBtn">🌙 暗色模式</button>
-            <button class="btn btn-pwd" onclick="openModal('pwdModal')">修改密码</button>
             <button class="btn btn-add" onclick="openModal('addModal')">录入资产</button>
-            <a href="/logout" class="btn btn-logout" style="text-decoration: none;">安全退出</a>
+            
+            <div class="dropdown">
+                <button class="btn btn-theme" onclick="toggleMenu(event)">管理 ▾</button>
+                <div class="dropdown-menu" id="userMenu">
+                    <button onclick="openModal('pwdModal')">修改密码</button>
+                    <a href="/logout" class="menu-sep">安全退出</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -162,7 +155,16 @@
             <tbody>
                 {{range .Items}}
                 <tr class="status-{{.Status}}">
-                    <td title="{{.Type}}"><span class="type-badge">{{.Type}}</span></td>
+                    <td title="{{.Type}}">
+                        <span class="type-badge">
+                            {{if eq .Type "域名"}}<i class="ico ico-domain"></i>
+                            {{else if eq .Type "VPS"}}<i class="ico ico-vps"></i>
+                            {{else if eq .Type "SSL证书"}}<i class="ico ico-ssl"></i>
+                            {{else}}<i class="ico ico-other"></i>
+                            {{end}}
+                            {{.Type}}
+                        </span>
+                    </td>
                     <td title="{{.Name}}"><strong>{{.Name}}</strong></td>
                     <td>{{.ExpiresAt.Format "2006-01-02"}}</td>
                     <td>
@@ -189,7 +191,7 @@
     </div>
 </div>
 
-<!-- 弹窗 1：录入新资产 -->
+<!-- 录入弹窗 -->
 <div class="modal" id="addModal">
     <div class="modal-content">
         <div class="modal-header">录入新资产监控</div>
@@ -202,8 +204,8 @@
                 <label>资产类型</label>
                 <select name="type">
                     <option value="域名">域名</option>
-                    <option value="VPS">虚拟主机</option>
-                    <option value="SSL证书">证书</option>
+                    <option value="VPS">VPS</option>
+                    <option value="SSL证书">SSL证书</option>
                     <option value="其他">其他杂项</option>
                 </select>
             </div>
@@ -219,7 +221,7 @@
     </div>
 </div>
 
-<!-- 弹窗 2：办理资产续费 -->
+<!-- 续费弹窗 -->
 <div class="modal" id="renewModal">
     <div class="modal-content">
         <div class="modal-header">资产续期截止调整</div>
@@ -238,7 +240,7 @@
     </div>
 </div>
 
-<!-- 弹窗 3：安全修改密码 -->
+<!-- 改密弹窗 -->
 <div class="modal" id="pwdModal">
     <div class="modal-content">
         <div class="modal-header">修改管理员登录密码</div>
@@ -260,8 +262,15 @@
 </div>
 
 <script>
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    // 已经彻底删除 ZorocloseModal 干扰项，修正函数作用域
+    function openModal(id) { 
+        document.getElementById(id).style.display = 'flex'; 
+        document.getElementById('userMenu').classList.remove('show'); 
+    }
+    
+    function closeModal(id) { 
+        document.getElementById(id).style.display = 'none'; 
+    }
     
     function openRenewModal(id, name) {
         document.getElementById('renewItemId').value = id;
@@ -269,8 +278,16 @@
         openModal('renewModal');
     }
 
+    function toggleMenu(e) {
+        e.stopPropagation();
+        document.getElementById('userMenu').classList.toggle('show');
+    }
+
     window.onclick = function(e) {
         if(e.target.classList.contains('modal')) e.target.style.display = 'none';
+        if(!e.target.matches('.dropdown button')) {
+            document.getElementById('userMenu').classList.remove('show');
+        }
     }
 
     function toggleTheme() {
