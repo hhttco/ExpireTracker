@@ -27,7 +27,7 @@
 - **后端 (Backend)**: Go 1.20+ (使用官方内置标准库 `net/http`, `html/template`, `database/sql`)
 - **前端 (Frontend)**: 原生 HTML5, CSS3 (包含 Flexbox, Grid 布局与 Media Queries 响应式), 原生 JavaScript (ES6+)
 - **数据库 (Database)**: SQLite3 (嵌入式单文件数据库)
-- **依赖驱动 (Driver)**: `github.com` (或纯 Go 版本 `modernc.org/sqlite`)
+- **依赖驱动 (Driver)**: `github.com/mattn/go-sqlite3` (或纯 Go 版本 `modernc.org/sqlite`)
 
 ---
 
@@ -43,8 +43,43 @@ expire-tracker/
 ```
 
 ---
+## 🚀 快速部署指南
+```bash
+apt install -y nginx && cd /var/www
+wget -N https://github.com/hhttco/ExpireTracker/releases/download/v1.0.0/et.zip -O ./et.zip
+unzip ./et.zip -d /var/www/et
+chown -R www-data:www-data /var/www/et && chmod -R 755 /var/www/et
+rm ./et.zip
+chmod +x /var/www/et/et
 
-## 🚀 快速启动指南
+vim /etc/systemd/system/et.service
+[Unit]
+Description=Et Service App
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/et
+ExecStart=/var/www/et/et
+Restart=always
+MemoryLimit=50M
+
+[Install]
+WantedBy=multi-user.target
+
+启动
+systemctl daemon-reload
+systemctl enable et
+systemctl start et
+systemctl status et
+
+配置域名 安装证书
+```
+
+---
+
+## 自定义启动指南
 
 ### 1. 克隆或下载项目
 确保本地已配置好 Go 语言开发环境，将项目放置在您的工作目录下。
@@ -56,13 +91,13 @@ expire-tracker/
 go mod init expire-tracker
 
 # 下载广泛应用的 SQLite3 驱动
-go get github.com
+go get github.com/mattn/go-sqlite3
 ```
 > 💡 **Windows 用户避坑提示**：若运行或编译时提示缺少 `gcc` 环境，可在 `main.go` 中将驱动包替换为不需要 C 语言编译器的纯 Go 版本：
 > ```bash
 > go get modernc.org/sqlite
 > ```
-> 并将代码中的 `_ "github.com"` 修改为 `_ "modernc.org/sqlite"`，数据库打开方式改为 `sql.Open("sqlite", ...)`。
+> 并将代码中的 `_ "github.com/mattn/go-sqlite3"` 修改为 `_ "modernc.org/sqlite"`，数据库打开方式改为 `sql.Open("sqlite", ...)`。
 
 ### 3. 本地编译与运行
 在终端执行：
@@ -94,6 +129,8 @@ zip -r et.zip main.go templates/
 在部署到服务器前，您可以在本地直接编译出无源码的可执行文件：
 ```bash
 # 编译出可执行文件 (Windows 下为 expire-tracker.exe，Linux 下为 expire-tracker)
-go build -o expire-tracker main.go
+通用: go build -o expire-tracker main.go
+
+Linux: CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o sw main.go
 ```
 **部署部署提示**：在服务器上运行编译出的程序时，请确保运行路径下存有 `templates` 文件夹及其中的 `.html` 文件，否则程序在解析路由模板时会因找不到路径而报错退出。
