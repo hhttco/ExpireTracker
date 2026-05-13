@@ -48,8 +48,8 @@ func main() {
         http.HandleFunc("/delete", authMiddleware(deleteHandler))
         http.HandleFunc("/change-password", authMiddleware(passwordHandler))
 
-        log.Println("服务器已启动: http://localhost:8080")
-        if err := http.ListenAndServe(":8080", nil); err != nil {
+        log.Println("服务器已启动: http://localhost:8089")
+        if err := http.ListenAndServe(":8089", nil); err != nil {
                 log.Fatal(err)
         }
 }
