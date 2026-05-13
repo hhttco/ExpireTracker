@@ -217,6 +217,6 @@ zip -r et.zip main.go templates/
 # 编译出可执行文件 (Windows 下为 expire-tracker.exe，Linux 下为 expire-tracker)
 通用: go build -o expire-tracker main.go
 
-Linux: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o sw main.go
+Linux: CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o et main.go
 ```
 **部署部署提示**：在服务器上运行编译出的程序时，请确保运行路径下存有 `templates` 文件夹及其中的 `.html` 文件，否则程序在解析路由模板时会因找不到路径而报错退出。
