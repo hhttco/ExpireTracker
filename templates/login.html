@@ -8,7 +8,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "PingFang SC", sans-serif; }
         
         body {
-            /* 深邃科技感背景底色 */
             background-color: #030712;
             height: 100vh;
             display: flex;
@@ -18,7 +17,7 @@
             position: relative;
         }
 
-        /* 后台科技感流光背景气泡 - 高阶多重模糊 */
+        /* 后台流光背景气泡 */
         .ambient-glow {
             position: absolute;
             border-radius: 50%;
@@ -27,37 +26,16 @@
             mix-blend-mode: screen;
             animation: float-glow 8s ease-in-out infinite alternate;
         }
-        .glow-1 {
-            width: 450px;
-            height: 450px;
-            top: -10%;
-            left: -5%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(0, 0, 0, 0) 70%);
-        }
-        .glow-2 {
-            width: 500px;
-            height: 500px;
-            bottom: -15%;
-            right: -5%;
-            background: radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(0, 0, 0, 0) 70%);
-            animation-delay: -3s;
-        }
-        .glow-3 {
-            width: 350px;
-            height: 350px;
-            top: 40%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
-            animation-delay: -5s;
-        }
+        .glow-1 { width: 450px; height: 450px; top: -10%; left: -5%; background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, rgba(0, 0, 0, 0) 70%); }
+        .glow-2 { width: 500px; height: 500px; bottom: -15%; right: -5%; background: radial-gradient(circle, rgba(147, 51, 234, 0.35) 0%, rgba(0, 0, 0, 0) 70%); animation-delay: -3s; }
+        .glow-3 { width: 350px; height: 350px; top: 40%; left: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(0, 0, 0, 0) 70%); animation-delay: -5s; }
 
         @keyframes float-glow {
             0% { transform: translate(0, 0) scale(1); }
             100% { transform: translate(40px, 30px) scale(1.1); }
         }
 
-        /* 重工业风毛玻璃登录卡片 */
+        /* 磨砂玻璃卡片 */
         .login-container {
             background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(24px);
@@ -67,137 +45,76 @@
             padding: 50px 40px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
             z-index: 10;
             position: relative;
         }
 
-        /* 头部高级感标题 */
-        .login-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        .login-header .logo-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 16px;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
+        .login-header { text-align: center; margin-bottom: 40px; }
+        .login-header .logo-icon { width: 48px; height: 48px; margin: 0 auto 16px; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
+        .login-header .logo-icon svg { width: 24px; height: 24px; fill: #fff; }
+        .login-header h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; color: #f8fafc; margin-bottom: 6px; background: linear-gradient(to right, #ffffff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .login-header p { font-size: 13px; color: #64748b; letter-spacing: 0.5px; }
+
+        .form-group { margin-bottom: 24px; position: relative; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 500; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input { width: 100%; padding: 14px 16px; background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px; color: #fff; font-size: 15px; outline: none; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .form-group input:focus { border-color: #6366f1; background: rgba(0, 0, 0, 0.4); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 8px 16px -4px rgba(99, 102, 241, 0.1); }
+        .form-group input::placeholder { color: #475569; }
+
+        button.btn-login { width: 100%; padding: 14px; background: linear-gradient(90deg, #4f46e5, #7c3aed); border: none; border-radius: 10px; color: #fff; font-size: 16px; font-weight: 600; letter-spacing: 2px; cursor: pointer; box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25); transition: all 0.2s ease; margin-top: 10px; display: flex; align-items: center; justify-content: center; }
+        button.btn-login:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4); filter: brightness(1.1); }
+
+        /* ================== 高级红色毛玻璃错误弹窗样式 ================== */
+        .error-toast {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            width: 90%;
+            background: rgba(239, 68, 68, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(239, 68, 68, 0.3);
             border-radius: 12px;
+            padding: 12px 16px;
+            color: #fca5a5;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            justify-content: space-between;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(239, 68, 68, 0.1);
+            animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            z-index: 20;
         }
-        .login-header .logo-icon svg {
-            width: 24px;
-            height: 24px;
-            fill: #fff;
-        }
-        .login-header h2 {
-            font-size: 24px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            color: #f8fafc;
-            margin-bottom: 6px;
-            background: linear-gradient(to right, #ffffff, #cbd5e1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .login-header p {
-            font-size: 13px;
-            color: #64748b;
-            letter-spacing: 0.5px;
+        .error-toast span { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .error-toast .close-toast { cursor: pointer; color: #f8fafc; font-weight: bold; opacity: 0.6; padding: 0 4px; transition: opacity 0.2s; }
+        .error-toast .close-toast:hover { opacity: 1; }
+
+        @keyframes slide-in {
+            0% { opacity: 0; transform: translate(-50%, -80%) scale(0.95); }
+            100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
         }
 
-        /* 表单输入组 */
-        .form-group {
-            margin-bottom: 24px;
-            position: relative;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .input-wrapper {
-            position: relative;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 14px 16px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        /* 聚焦时的极光呼吸边框 */
-        .form-group input:focus {
-            border-color: #6366f1;
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15),
-                        0 8px 16px -4px rgba(99, 102, 241, 0.1);
-        }
-        .form-group input::placeholder {
-            color: #475569;
-        }
-
-        /* 高端极光渐变按钮 */
-        button.btn-login {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 2px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
-            transition: all 0.2s ease;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        button.btn-login:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
-            filter: brightness(1.1);
-        }
-        button.btn-login:active {
-            transform: translateY(1px);
-        }
-
-        /* 底部安全提示 */
-        .login-footer {
-            text-align: center;
-            margin-top: 30px;
-            font-size: 12px;
-            color: #475569;
-        }
+        .login-footer { text-align: center; margin-top: 30px; font-size: 12px; color: #475569; }
     </style>
 </head>
 <body>
-    <!-- 后台流动微光粒子 -->
     <div class="ambient-glow glow-1"></div>
     <div class="ambient-glow glow-2"></div>
     <div class="ambient-glow glow-3"></div>
 
-    <!-- 登录面板主盒子 -->
     <div class="login-container">
+        <!-- Go 模板标签：当 HasError 为 true 时，在此处渲染高级警告横条 -->
+        {{if .HasError}}
+        <div class="error-toast" id="errorToast">
+            <span>⚠️ 身份认证失败，请检查账号或密码</span>
+            <div class="close-toast" onclick="dismissToast()">×</div>
+        </div>
+        {{end}}
+
         <div class="login-header">
             <div class="logo-icon">
-                <!-- 时钟与沙漏结合的纯SVG矢量图标，契合时间监控主题 -->
                 <svg viewBox="0 0 24 24">
                     <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z" />
                 </svg>
@@ -209,24 +126,37 @@
         <form method="POST" action="/login">
             <div class="form-group">
                 <label>身份账号</label>
-                <div class="input-wrapper">
-                    <input type="text" name="username" placeholder="管理员账号" autocomplete="off" required>
-                </div>
+                <input type="text" name="username" placeholder="管理员账号" autocomplete="off" required>
             </div>
             <div class="form-group">
                 <label>安全密码</label>
-                <div class="input-wrapper">
-                    <input type="password" name="password" placeholder="请输入密钥密码" required>
-                </div>
+                <input type="password" name="password" placeholder="请输入密钥密码" required>
             </div>
-            <button type="submit" class="btn-login">
-                安全登录
-            </button>
+            <button type="submit" class="btn-login">安全登录</button>
         </form>
 
-        <div class="login-footer">
-            全端自适应 · 本地加密轻量级控制台
-        </div>
+        <div class="login-footer">全端自适应 · 本地加密轻量级控制台</div>
     </div>
+
+    <script>
+        // 点击“×”关闭错误提示条
+        function dismissToast() {
+            const toast = document.getElementById('errorToast');
+            if (toast) {
+                toast.style.transition = 'all 0.3s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -30px) scale(0.9)';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }
+        
+        // 自动消除：5秒后自动关掉提示
+        window.onload = function() {
+            const toast = document.getElementById('errorToast');
+            if (toast) {
+                setTimeout(dismissToast, 5000);
+            }
+        }
+    </script>
 </body>
 </html>
