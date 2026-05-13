@@ -75,6 +75,92 @@ systemctl start et
 systemctl status et
 
 配置域名 安装证书
+
+vim /etc/nginx/conf.d/et.conf
+```
+
+```bash
+# ==========================================
+# 极致优化的 HTTP (80端口) 
+# ==========================================
+server {
+    # 替换为您的域名或服务器公网 IP
+    server_name your_domain.com; 
+
+    # 禁用未绑定域名的直接 IP 访问（防止恶意解析和网络垃圾爬虫扫描）
+    if ($host != $server_name) {
+        return 444; # Nginx 特有状态码：立刻掐断连接，不返回任何字节
+    }
+
+    # 限制上传文件大小上限（作为系统安全规范）
+    client_max_body_size 10M;
+
+    # ------------------------------------------
+    # [极致优化的 Gzip 压缩] 解决毛玻璃复杂 HTML 加载速度问题
+    # ------------------------------------------
+    gzip on;
+    gzip_min_length 1024; 
+    gzip_comp_level 5; 
+    gzip_vary on; 
+    gzip_proxied any; 
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript application/x-javascript;
+
+    # ------------------------------------------
+    # [网站安全加固请求头] 防跨站、防劫持、隐藏环境
+    # ------------------------------------------
+    add_header X-Frame-Options "SAMEORIGIN" always; 
+    add_header X-XSS-Protection "1; mode=block" always; 
+    add_header X-Content-Type-Options "nosniff" always; 
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always; 
+
+    # ------------------------------------------
+    # [反向代理核心路由] 对接后台 Golang 服务端口
+    # ------------------------------------------
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+
+        # 高性能 HTTP/1.1 长连接支持
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        # 透传最精准的客户端真实 IP 及环境参数
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # [代理缓冲区深度优化] 彻底消除毛玻璃大网页加载中断隐患
+        proxy_buffering on;
+        proxy_buffer_size 128k; 
+        proxy_buffers 4 256k; 
+        proxy_busy_buffers_size 256k;
+        proxy_max_temp_file_size 0; # 禁用磁盘临时文件，全在内存中极速传输
+
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 60s;
+        proxy_send_timeout 60s;
+    }
+
+    # ------------------------------------------
+    # [漏洞探针拦截] 智能拦截黑客对恶意漏洞的扫描
+    # ------------------------------------------
+    location ~* \.(php|pl|py|jsp|sh|cgi|env|git|svn|hg)$ {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # ------------------------------------------
+    # 当 Go 后端程序挂掉时，直接就地返回中文友好提示，不需要依赖任何本地 HTML 文件
+    # ------------------------------------------
+    error_page 502 503 504 = @backend_down;
+
+    location @backend_down {
+        default_type text/html;
+        return 502 "<html><head><title>服务暂不可用</title></head><body style='background:#0f172a;color:#f8fafc;font-family:sans-serif;padding:50px;text-align:center;'><h2>⚠️ 资产监控系统服务暂时无法连接</h2><p style='color:#94a3b8;'>后端 Go 程序可能正在维护或已停止运行，请稍后再试。</p></body></html>";
+    }
+}
 ```
 
 ---
