@@ -136,28 +136,28 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-        if r.Method == http.MethodPost {
-                username := r.FormValue("username")
-                password := r.FormValue("password")
+	if r.Method == http.MethodPost {
+		username := r.FormValue("username")
+		password := r.FormValue("password")
 
-                if username == "admin" && password == adminPassword {
-                        http.SetCookie(w, &http.Cookie{Name: "session", Value: "authenticated", Path: "/"})
-                        http.Redirect(w, r, "/", http.StatusSeeOther)
-                        return
-                } else {
-                        // 密码或账号错误，重定向回登录页并带上 error=1 参数
-                        http.Redirect(w, r, "/login?error=1", http.StatusSeeOther)
-                        return
-                }
-        }
+		if username == "admin" && password == adminPassword {
+			http.SetCookie(w, &http.Cookie{Name: "session", Value: "authenticated", Path: "/"})
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		} else {
+			data := map[string]interface{}{
+				"HasError": true,
+			}
+			tmpl.ExecuteTemplate(w, "login.html", data)
+			return
+		}
+	}
 
-        // 检查 URL 中是否有 error 参数
-        hasError := r.URL.Query().Get("error") == "1"
-        data := map[string]interface{}{
-                "HasError": hasError,
-        }
-
-        tmpl.ExecuteTemplate(w, "login.html", data)
+	// 正常的普通 GET 访问登录页（未触发登录动作时，错误状态为 false）
+	data := map[string]interface{}{
+		"HasError": false,
+	}
+	tmpl.ExecuteTemplate(w, "login.html", data)
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
